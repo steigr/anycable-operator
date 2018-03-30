@@ -1,0 +1,13 @@
+{{- if .Values.resource.spec.redis -}}
+{{- $name := .Values.resource.name -}}
+{{- $default := .Values.default.redis -}}
+{{- with .Values.resource.spec.redis -}}
+apiVersion: database.stei.gr/v1alpha1
+kind: Redis
+metadata:
+  name: {{ $name }}
+spec:
+  credentials: {{ printf "%s-redis-credentials" $name | quote }}
+  database: {{ default $default.database .database | quote }}
+{{- end -}}
+{{- end -}}

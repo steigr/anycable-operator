@@ -1,0 +1,4 @@
+resource:
+  name: example
+  namespace: default
+  spec: {}

@@ -1,1 +1,52 @@
-image: nginx
+default:
+  channel: anycable
+  redis:
+    database: "10"
+  secret:
+    database: example-postgres-credentials
+  websocket:
+    size: 1
+    port: 8080
+    debug: "true"
+    log: debug
+    config:
+      debug: "false"
+      disconnect_rate: "100"
+      headers: "cookie"
+      host: "0.0.0.0"
+      log_format: "text"
+      log_level: "info"
+      metrics_path: ""
+      metrics_log: "false"
+      metrics_log_interval: "15"
+      metrics_port: "9090"
+      path: "/cable"
+      port: "8080"
+      redis_channel: "anycable"
+      ssl_cert: "" 
+      ssl_key: ""
+    image:
+      name: quay.io/steigr/anycable
+      tag: latest
+      pullPolicy: Always
+    ingress:
+      hostname: example.com
+      path: /cable
+      annotations:
+        kubernetes.io/ingress.class: tectonic
+  server:
+    size: 1
+    port: 50051
+    config:
+      anycable_rpc_host: 0.0.0.0:50051
+    image:
+      name: docker.io/library/rails
+      tag: latest
+      pullPolicy: Always
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 100m
+        memory: 256Mi

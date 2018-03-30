@@ -1,0 +1,30 @@
+resource:
+  name: anycable-ruby
+  namespace: default
+  spec:
+    channel: anycable-chat
+    secret:
+      redis: history-redis-credentials
+      database: history-postgres-credentials
+    websocket:
+      size: 1
+      port: 8080
+      config:
+        debug: "true"
+        log_level: debug
+      image:
+        name: quay.io/steigr/anycable
+        tag: 50d47feee20c23a6cfbabe12becd3cc567d6b1ba
+        pullPolicy: Always
+      ingress:
+        hostname: history.sandbox
+        path: /cable
+        annotations:
+          kubernetes.io/ingress.class: tectonic
+    server:
+      size: 1
+      port: 50051
+      image:
+        name: docker.io/library/rails
+        tag: latest
+        pullPolicy: Always

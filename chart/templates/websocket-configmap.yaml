@@ -1,0 +1,23 @@
+{{- $app := printf "%s-websocket" .Values.resource.name -}}
+{{- $default := .Values.default.websocket.config -}}
+{{- if .Values.resource.spec.websocket -}}
+{{- if .Values.resource.spec.websocket.config -}}
+{{- range $key, $value := .Values.resource.spec.websocket.config -}}
+{{- if hasKey $default $key -}}
+{{- $_ := set $default $key $value -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $app }}
+  labels:
+    app: {{ $app }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data: {{- range $key, $value := $default }}
+  ANYCABLE_{{ $key | upper }}: {{ $value | quote -}}
+{{ end }}

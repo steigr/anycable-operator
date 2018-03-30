@@ -1,0 +1,24 @@
+{{- $app := printf "%s-websocket" .Values.resource.name -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $app }}
+  labels:
+    app: {{ .Values.resource.name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    app: {{ .Values.resource.name }}
+    resource: {{ $app }}
+  ports:
+    - name: websocket
+      protocol: TCP
+      port: 80
+      targetPort: websocket
+  type: ClusterIP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800

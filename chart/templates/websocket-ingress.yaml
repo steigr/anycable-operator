@@ -1,0 +1,27 @@
+{{- $app := printf "%s-websocket" .Values.resource.name -}}
+{{- $default := .Values.default.websocket -}}
+{{- $spec := .Values.resource.spec.websocket -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ $app }}
+  labels:
+    app: {{ $app }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{ with $spec }}
+{{ if .ingress.annotations }}
+  annotations:
+{{ toYaml .ingress.annotations | indent 4 }}
+{{ end }}
+spec:
+  rules:
+  - host: {{ .ingress.hostname }}
+    http:
+      paths:
+      - path: {{ default $default.ingress.path .ingress.path }}
+        backend:
+          serviceName: {{ $app }}
+          servicePort: websocket
+{{ end }}

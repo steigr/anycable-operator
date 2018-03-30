@@ -1,0 +1,60 @@
+{{- $app := printf "%s-anycable" .Values.resource.name -}}
+{{- $default := .Values.default.server -}}
+{{- $spec := .Values.resource.spec.server -}}
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ $app }}
+  labels:
+    app: {{ $app }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ default .Values.default.size .Values.resource.spec.size }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.resource.name }}
+        resource: {{ $app }}
+    spec:
+{{- if $spec.nodeSelector }}
+      nodeSelector:
+{{ toYaml $spec.nodeSelector | indent 8 }}
+{{ end -}}
+{{- if $spec.tolerations }}
+      tolerations:
+{{ toYaml $spec.tolerations | indent 8 }}
+{{ end }}
+      containers:
+      - name: anycable
+{{- with $default }}{{ if $spec.image }}
+        image: {{ default .image.name $spec.image.name }}:{{ default .image.tag $spec.image.tag }}
+        imagePullPolicy: {{ default .image.pullPolicy $spec.image.pullPolicy }}{{ else }}
+        image: {{ .image.name }}:{{ .image.tag }}
+        imagePullPolicy: {{ .image.pullPolicy }}{{ end }}{{ end }}
+        envFrom:
+          - configMapRef:
+              name: {{ $app }}
+        env:
+          - name: ANYCABLE_REDIS_URL
+            valueFrom:
+              secretKeyRef:
+                key: REDIS_URL{{ if .Values.resource.spec.secret }}
+                name: {{ default ( printf "%s-redis-credentials" .Values.resource.name ) .Values.resource.spec.secret.redis }}{{ else }}
+                name: {{ printf "%s-redis-credentials" .Values.resource.name }}{{ end }}
+          - name: REDIS_URL
+            valueFrom:
+              secretKeyRef:
+                key: REDIS_URL{{ if .Values.resource.spec.secret }}
+                name: {{ default ( printf "%s-redis-credentials" .Values.resource.name ) .Values.resource.spec.secret.redis }}{{ else }}
+                name: {{ printf "%s-redis-credentials" .Values.resource.name }}{{ end }}
+        args:
+          - bin/anycable
+        ports:
+          - name: anycable
+            containerPort: {{ default $default.port $spec.port }}
+{{ if $spec.resources }}
+        resources:
+{{ toYaml $spec.resources | indent 12 }}
+{{ end }}

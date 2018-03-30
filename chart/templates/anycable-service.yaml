@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.resource.name }}-anycable
+  labels:
+    app: {{ .Values.resource.name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    app: {{ .Values.resource.name }}
+    resource: {{ .Values.resource.name }}-anycable
+  ports:
+    - name: anycable
+      protocol: TCP
+      port: 50051
+      targetPort: anycable
+  type: ClusterIP

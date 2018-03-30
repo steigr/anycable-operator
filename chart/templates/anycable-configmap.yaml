@@ -1,0 +1,26 @@
+{{- $app := printf "%s-anycable" .Values.resource.name -}}
+{{- $default := .Values.default.server.config -}}
+{{- if .Values.resource.spec.server -}}
+{{- if .Values.resource.spec.server.config -}}
+{{- range $key, $value := .Values.resource.spec.server.config -}}
+{{- if hasKey $default $key -}}
+{{- $_ := set $default $key $value -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- $websocket_default := .Values.default.websocket -}}
+{{- $websocket := .Values.resource.spec.websocket -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $app }}
+  labels:
+    app: {{ $app }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data: {{- range $key, $value := $default }}
+  {{ $key | upper }}: {{ $value | quote -}}
+{{ end }}
+  CABLE_URL: ws://{{ default $websocket_default.ingress.hostname $websocket.ingress.hostname }}{{ default $websocket_default.ingress.path $websocket.ingress.path }}
